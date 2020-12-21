@@ -10,8 +10,7 @@ ENV WORKSPACE=${WORKSPACE} \
     TIMEZONE=Asia/Shanghai  \
     MAX_INPUT_VARS=2000\ 
     POST_MAX_SIZE=200M\
-    UPLOAD_MAX_FILESIZE=200M\
-    SUPERCRONIC=supercronic-linux-amd64
+    UPLOAD_MAX_FILESIZE=200M
 
 
 # 更新为国内镜像
@@ -20,6 +19,8 @@ RUN apk --update -t --no-cache add tzdata tzdata \
     && ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
     && echo "${TIMEZONE}" > /etc/timezone \
     \
+    && apk add --update --no-cache libcap \
+    && setcap cap_setgid=ep /bin/busybox \
     && apk add --no-cache --virtual .build-deps \
     gcc \
     make \
@@ -84,12 +85,8 @@ WORKDIR ${WORKSPACE}
 COPY ./supervisord.conf /etc/supervisord/
 COPY ./entrypoint.sh /data/www/run/
 COPY ./crontabs/www-data /var/spool/cron/crontabs/
-COPY ./supercronic-linux-amd64 /usr/local/bin/${SUPERCRONIC}
-
-RUN chmod +x "/usr/local/bin/${SUPERCRONIC}" \ 
-  && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic \
-  && mkdir -p /var/log/cron \
-  && chmod +x /data/www/run/entrypoint.sh
+COPY ./entrypoint.sh /data/www/run/
+RUN chmod +x /data/www/run/entrypoint.sh
 
 #COPY ./src ${WORKSPACE}
 #RUN composer install --no-dev --no-scripts
