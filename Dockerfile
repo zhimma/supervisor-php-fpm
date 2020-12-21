@@ -10,7 +10,9 @@ ENV WORKSPACE=${WORKSPACE} \
     TIMEZONE=Asia/Shanghai  \
     MAX_INPUT_VARS=2000\ 
     POST_MAX_SIZE=200M\
-    UPLOAD_MAX_FILESIZE=200M
+    UPLOAD_MAX_FILESIZE=200M\
+    SUPERCRONIC=supercronic-linux-amd64
+
 
 # 更新为国内镜像
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
@@ -81,7 +83,13 @@ RUN apk --update -t --no-cache add tzdata tzdata \
 WORKDIR ${WORKSPACE}
 COPY ./supervisord.conf /etc/supervisord/
 COPY ./entrypoint.sh /data/www/run/
-RUN chmod +x /data/www/run/entrypoint.sh
+COPY ./crontabs/www-data /var/spool/cron/crontabs/
+COPY ./supercronic-linux-amd64 /usr/local/bin/${SUPERCRONIC}
+
+RUN chmod +x "/usr/local/bin/${SUPERCRONIC}" \ 
+  && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic \
+  && mkdir -p /var/log/cron \
+  && chmod +x /data/www/run/entrypoint.sh
 
 #COPY ./src ${WORKSPACE}
 #RUN composer install --no-dev --no-scripts
