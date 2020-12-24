@@ -1,5 +1,9 @@
 # 从官方基础版本构建
-FROM php:7.3.8-fpm-alpine
+FROM php:7.4.13-fpm-alpine
+
+LABEL Author="maxiongfei"
+LABEL Version="2020.12"
+LABEL Description="supervisor管理的php-fpm和crontab镜像."
 
 # 参考地址：https://learnku.com/articles/31344
 # 参考地址：https://github.com/lework/Docker-php-fpm/blob/master/Dockerfile
@@ -11,7 +15,6 @@ ENV WORKSPACE=${WORKSPACE} \
     MAX_INPUT_VARS=2000\ 
     POST_MAX_SIZE=200M\
     UPLOAD_MAX_FILESIZE=200M
-
 
 # 更新为国内镜像
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
@@ -49,12 +52,10 @@ RUN apk --update -t --no-cache add tzdata tzdata \
     supervisor \
     procps \
     && docker-php-ext-configure gd \
-      --with-gd \
-      --with-freetype-dir=/usr/include/ \
-      --with-png-dir=/usr/include/ \
-      --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-configure zip --with-libzip \  
-    && docker-php-ext-install iconv pdo_mysql mysqli gd mbstring bcmath exif intl xsl json soap dom zip opcache pcntl \
+      --with-freetype \
+      --with-jpeg \
+    && docker-php-ext-configure zip \
+    && docker-php-ext-install iconv pdo_mysql mysqli gd bcmath exif intl xsl json soap dom zip opcache pcntl \
     #&& pecl install memcached \
     #&& pecl install mongodb \
     && pecl install redis \
